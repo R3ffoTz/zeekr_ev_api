@@ -44,10 +44,6 @@ def customGet(client: "ZeekrClient", url: str) -> Any:
 
 def appSignedPost(client: "ZeekrClient", url: str, body: str | None = None) -> Any:
     """Sends a signed POST request with an app signature."""
-    if not client.bearer_token:
-        raise Exception("Client is not logged in.")
-    if not const.LOGGED_IN_HEADERS["authorization"]:
-        const.LOGGED_IN_HEADERS["authorization"] = client.bearer_token
     logger = getattr(client, "logger", log)
     req = Request("POST", url, headers=const.LOGGED_IN_HEADERS, data=body)
     prepped = client.session.prepare_request(req)
