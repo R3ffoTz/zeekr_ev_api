@@ -3,7 +3,6 @@ from typing import Any, TYPE_CHECKING
 
 from requests import Request
 from . import const, zeekr_app_sig, zeekr_hmac
-from .client import ZeekrException
 
 if TYPE_CHECKING:
     from .client import ZeekrClient
@@ -46,7 +45,7 @@ def customGet(client: "ZeekrClient", url: str) -> Any:
 def appSignedPost(client: "ZeekrClient", url: str, body: str | None = None) -> Any:
     """Sends a signed POST request with an app signature."""
     if not client.bearer_token:
-        raise ZeekrException("Client is not logged in.")
+        raise Exception("Client is not logged in.")
     if not const.LOGGED_IN_HEADERS["authorization"]:
         const.LOGGED_IN_HEADERS["authorization"] = client.bearer_token
     logger = getattr(client, "logger", log)
@@ -76,7 +75,7 @@ def appSignedPost(client: "ZeekrClient", url: str, body: str | None = None) -> A
 def appSignedGet(client: "ZeekrClient", url: str, headers: dict | None = None) -> Any:
     """Sends a signed GET request with an app signature."""
     if not client.bearer_token:
-        raise ZeekrException("Client is not logged in.")
+        raise Exception("Client is not logged in.")
     if not const.LOGGED_IN_HEADERS["authorization"]:
         const.LOGGED_IN_HEADERS["authorization"] = client.bearer_token
     logger = getattr(client, "logger", log)
