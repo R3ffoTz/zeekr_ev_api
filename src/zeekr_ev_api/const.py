@@ -19,6 +19,8 @@ INBOX_URL = "member/inbox/home"
 UPDATELANGUAGE_URL = "user/updateLanguage"
 SYCN_URL = "open-api/v1/mcs/notice/receiver/equipment/relation/sycn"
 VEHICLESTATUS_URL = "ms-vehicle-status/api/v1.0/vehicle/status/latest"
+REMOTECONTROLSTATE_URL = "ms-app-bff/api/v1.0/remoteControl/getVehicleState"
+REMOTECONTROL_URL = "ms-remote-control/v1.0/remoteControl/control"
 
 COUNTRY_CODE = "AU"
 REGION_CODE = "SEA"
@@ -35,6 +37,8 @@ HMAC_ACCESS_KEY = ""
 HMAC_SECRET_KEY = ""
 PASSWORD_PUBLIC_KEY = ""
 PROD_SECRET = ""
+VIN_KEY = ""
+VIN_IV = ""
 
 DEFAULT_HEADERS = {
     "accept-encoding": "gzip",
@@ -74,9 +78,3 @@ LOGGED_IN_HEADERS = {
     "X-PLATFORM": "APP",
     "X-PROJECT-ID": "ZEEKR_SEA",
 }
-
-# Car Details
-CAR_MODELS = {}
-VIN = ""
-VIN_KEY = ""
-VIN_IV = ""
