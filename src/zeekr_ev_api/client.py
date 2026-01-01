@@ -5,7 +5,7 @@ Zeekr EV API Client
 import base64
 import json
 import logging
-from typing import Any
+from typing import Any, Dict
 
 import requests
 from Crypto.Cipher import PKCS1_v1_5
@@ -83,15 +83,15 @@ class ZeekrClient:
 
     def load_session(self, session_data: dict) -> None:
         """Loads a session from a dictionary."""
-        self.username = session_data.get("username")
+        self.username = session_data.get("username", "")
         self.country_code = session_data.get("country_code", "AU")
         self.auth_token = session_data.get("auth_token")
         self.bearer_token = session_data.get("bearer_token")
         self.user_info = session_data.get("user_info", {})
-        self.app_server_host = session_data.get("app_server_host")
-        self.usercenter_host = session_data.get("usercenter_host")
-        self.message_host = session_data.get("message_host")
-        self.region_code = session_data.get("region_code")
+        self.app_server_host = session_data.get("app_server_host", "")
+        self.usercenter_host = session_data.get("usercenter_host", "")
+        self.message_host = session_data.get("message_host", "")
+        self.region_code = session_data.get("region_code", "")
         self.region_login_server = session_data.get("region_login_server")
         self.vehicles: list["Vehicle"] = []
 
@@ -125,6 +125,9 @@ class ZeekrClient:
         """
         Encrypts the password using RSA.
         """
+        if not self.password:
+            raise ValueError("Password is not set for encryption.")
+
         key_bytes = base64.b64decode(self.password_public_key)
         public_key = RSA.import_key(key_bytes)
         cipher = PKCS1_v1_5.new(public_key)
@@ -339,7 +342,7 @@ class ZeekrClient:
         ]
         return self.vehicles
 
-    def get_vehicle_status(self, vin: str) -> Any:
+    def get_vehicle_status(self, vin: str) -> Dict[str, Any]:
         """
         Fetches the status for a specific vehicle.
         """
@@ -354,6 +357,30 @@ class ZeekrClient:
         vehicle_status_block = network.appSignedGet(
             self,
             f"{self.region_login_server}{const.VEHICLESTATUS_URL}?latest=false&target=new",
+            headers=headers,
+        )
+        if not vehicle_status_block.get("success", False):
+            raise ZeekrException(
+                f"Failed to get vehicle status: {vehicle_status_block}"
+            )
+
+        return vehicle_status_block.get("data", {})
+
+    def get_vehicle_state(self, vin: str) -> dict[str, Any]:
+        """
+        Fetches the remote control state of a vehicle.
+        """
+        if not self.logged_in:
+            raise ZeekrException("Not logged in")
+
+        encrypted_vin = zeekr_app_sig.aes_encrypt(vin, self.vin_key, self.vin_iv)
+
+        headers = const.LOGGED_IN_HEADERS.copy()
+        headers["X-VIN"] = encrypted_vin
+
+        vehicle_status_block = network.appSignedGet(
+            self,
+            f"{self.region_login_server}{const.REMOTECONTROLSTATE_URL}",
             headers=headers,
         )
         if not vehicle_status_block.get("success", False):
