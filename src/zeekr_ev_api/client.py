@@ -174,7 +174,7 @@ class ZeekrClient:
 
         if not found:
             eu_lookup = network.customGet(
-                self, "https://gateway-pub-azure.zeekr.eu/overseas-app/region/url"
+                self, const.EU_REGION_URL_HOST
             )
             eu_has_country = False
             if eu_lookup.get("success", False):
@@ -188,9 +188,9 @@ class ZeekrClient:
                     "Country %s found in EU region list; using EU hosts",
                     self.country_code,
                 )
-                self.app_server_host = "https://gateway-pub-azure.zeekr.eu/overseas-app/"
-                self.usercenter_host = "https://gateway-pub-azure.zeekr.eu/zeekr-cuc-idaas/"
-                self.message_host = "https://gateway-pub-azure.zeekr.eu/eu-message-core/"
+                self.app_server_host = const.EU_APP_SERVER_HOST
+                self.usercenter_host = const.EU_USERCENTER_HOST
+                self.message_host = const.EU_MESSAGE_HOST
                 self.region_code = "EU"
             else:
                 raise ZeekrException(
