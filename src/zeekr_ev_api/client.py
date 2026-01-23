@@ -56,6 +56,8 @@ class ZeekrClient:
         self.vin_key = vin_key or const.VIN_KEY
         self.vin_iv = vin_iv or const.VIN_IV
 
+        self.logged_in_headers = const.LOGGED_IN_HEADERS.copy()
+
         if session_data:
             self.load_session(session_data)
         else:
@@ -95,7 +97,7 @@ class ZeekrClient:
 
         if self.bearer_token:
             self.logged_in = True
-            const.LOGGED_IN_HEADERS["authorization"] = self.bearer_token
+            self.logged_in_headers["authorization"] = self.bearer_token
             if self.auth_token:
                 self.session.headers["authorization"] = self.auth_token
         else:
@@ -208,9 +210,9 @@ class ZeekrClient:
         
         # Update headers for region-specific project ID
         if self.region_code == "EU":
-            const.LOGGED_IN_HEADERS["X-PROJECT-ID"] = "ZEEKR_EU"
+            self.logged_in_headers["X-PROJECT-ID"] = "ZEEKR_EU"
         else:
-            const.LOGGED_IN_HEADERS["X-PROJECT-ID"] = "ZEEKR_SEA"
+            self.logged_in_headers["X-PROJECT-ID"] = "ZEEKR_SEA"
 
     def _check_user(self) -> None:
         """
@@ -346,7 +348,7 @@ class ZeekrClient:
         if not self.bearer_token:
             raise AuthException(f"No bearer token in response: {bearer_login_data}")
 
-        const.LOGGED_IN_HEADERS["authorization"] = self.bearer_token
+        self.logged_in_headers["authorization"] = self.bearer_token
 
     def get_vehicle_list(self) -> list["Vehicle"]:
         """
@@ -376,7 +378,7 @@ class ZeekrClient:
 
         encrypted_vin = zeekr_app_sig.aes_encrypt(vin, self.vin_key, self.vin_iv)
 
-        headers = const.LOGGED_IN_HEADERS.copy()
+        headers = self.logged_in_headers.copy()
         headers["X-VIN"] = encrypted_vin
 
         vehicle_status_block = network.appSignedGet(
@@ -400,7 +402,7 @@ class ZeekrClient:
 
         encrypted_vin = zeekr_app_sig.aes_encrypt(vin, self.vin_key, self.vin_iv)
 
-        headers = const.LOGGED_IN_HEADERS.copy()
+        headers = self.logged_in_headers.copy()
         headers["X-VIN"] = encrypted_vin
 
         vehicle_charging_status_block = network.appSignedGet(
@@ -436,7 +438,7 @@ class ZeekrClient:
 
         encrypted_vin = zeekr_app_sig.aes_encrypt(vin, self.vin_key, self.vin_iv)
 
-        headers = const.LOGGED_IN_HEADERS.copy()
+        headers = self.logged_in_headers.copy()
         headers["X-VIN"] = encrypted_vin
 
         vehicle_status_block = network.appSignedGet(
@@ -490,7 +492,7 @@ class ZeekrClient:
 
         encrypted_vin = zeekr_app_sig.aes_encrypt(vin, self.vin_key, self.vin_iv)
 
-        headers = const.LOGGED_IN_HEADERS.copy()
+        headers = self.logged_in_headers.copy()
         headers["X-VIN"] = encrypted_vin
 
         vehicle_charging_limit_block = network.appSignedGet(
