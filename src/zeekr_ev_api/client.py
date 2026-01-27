@@ -48,9 +48,6 @@ class ZeekrClient:
         # Lock for authentication updates
         self.auth_lock = threading.Lock()
 
-        # Cache for encrypted VINs
-        self.vin_encryption_cache: Dict[str, str] = {}
-
         # Store secrets on instance instead of mutating global const
         self.hmac_access_key = hmac_access_key or const.HMAC_ACCESS_KEY
         self.hmac_secret_key = hmac_secret_key or const.HMAC_SECRET_KEY
@@ -137,16 +134,6 @@ class ZeekrClient:
         password_bytes = self.password.encode("utf-8")
         encrypted_bytes = cipher.encrypt(password_bytes)
         return base64.b64encode(encrypted_bytes).decode("utf-8")
-
-    def _get_encrypted_vin(self, vin: str) -> str:
-        """
-        Encrypts the VIN using AES, with caching.
-        """
-        if vin not in self.vin_encryption_cache:
-            self.vin_encryption_cache[vin] = zeekr_app_sig.aes_encrypt(
-                vin, self.vin_key, self.vin_iv
-            )
-        return self.vin_encryption_cache[vin]
 
     def login(self, relogin: bool = False) -> None:
         """
@@ -389,8 +376,10 @@ class ZeekrClient:
         if not self.logged_in:
             raise ZeekrException("Not logged in")
 
+        encrypted_vin = zeekr_app_sig.aes_encrypt(vin, self.vin_key, self.vin_iv)
+
         headers = self.logged_in_headers.copy()
-        headers["X-VIN"] = self._get_encrypted_vin(vin)
+        headers["X-VIN"] = encrypted_vin
 
         vehicle_status_block = network.appSignedGet(
             self,
@@ -411,8 +400,10 @@ class ZeekrClient:
         if not self.logged_in:
             raise ZeekrException("Not logged in")
 
+        encrypted_vin = zeekr_app_sig.aes_encrypt(vin, self.vin_key, self.vin_iv)
+
         headers = self.logged_in_headers.copy()
-        headers["X-VIN"] = self._get_encrypted_vin(vin)
+        headers["X-VIN"] = encrypted_vin
 
         vehicle_charging_status_block = network.appSignedGet(
             self,
@@ -445,8 +436,10 @@ class ZeekrClient:
         if not self.logged_in:
             raise ZeekrException("Not logged in")
 
+        encrypted_vin = zeekr_app_sig.aes_encrypt(vin, self.vin_key, self.vin_iv)
+
         headers = self.logged_in_headers.copy()
-        headers["X-VIN"] = self._get_encrypted_vin(vin)
+        headers["X-VIN"] = encrypted_vin
 
         vehicle_status_block = network.appSignedGet(
             self,
@@ -470,7 +463,10 @@ class ZeekrClient:
         if not self.logged_in:
             raise ZeekrException("Not logged in")
 
-        extra_header = {"X-VIN": self._get_encrypted_vin(vin)}
+        extra_header = {}
+        extra_header["X-VIN"] = zeekr_app_sig.aes_encrypt(
+            vin, self.vin_key, self.vin_iv
+        )
 
         if serviceID == "RCS":
             endpoint = const.CHARGE_CONTROL_URL
@@ -494,8 +490,10 @@ class ZeekrClient:
         if not self.logged_in:
             raise ZeekrException("Not logged in")
 
+        encrypted_vin = zeekr_app_sig.aes_encrypt(vin, self.vin_key, self.vin_iv)
+
         headers = self.logged_in_headers.copy()
-        headers["X-VIN"] = self._get_encrypted_vin(vin)
+        headers["X-VIN"] = encrypted_vin
 
         vehicle_charging_limit_block = network.appSignedGet(
             self,
